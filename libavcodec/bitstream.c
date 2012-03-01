@@ -103,7 +103,7 @@ static int alloc_table(VLC *vlc, int size, int use_static)
     vlc->table_size += size;
     if (vlc->table_size > vlc->table_allocated) {
         if(use_static)
-            abort(); // cannot do anything, init_vlc() is used with too little memory
+            av_abort(); //cant do anything, init_vlc() is used with too little memory
         vlc->table_allocated += (1 << vlc->bits);
         vlc->table = av_realloc_f(vlc->table,
                                   vlc->table_allocated, sizeof(VLC_TYPE) * 2);
@@ -269,7 +269,7 @@ int ff_init_vlc_sparse(VLC *vlc, int nb_bits, int nb_codes,
         if(vlc->table_size && vlc->table_size == vlc->table_allocated){
             return 0;
         }else if(vlc->table_size){
-            abort(); // fatal error, we are called on a partially initialized table
+            av_abort(); // fatal error, we are called on a partially initialized table
         }
     }else {
         vlc->table = NULL;
