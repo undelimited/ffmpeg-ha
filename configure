@@ -279,6 +279,7 @@ Advanced options (experts only):
                            (faster, but may crash)
   --enable-memalign-hack   emulate memalign, interferes with memory debuggers
   --enable-lto             use link-time optimization
+  --disable-fpo            disable frame pointer omission
 
 Optimization options (experts only):
   --disable-asm            disable all assembler optimizations
@@ -1500,6 +1501,7 @@ CMDLINE_SELECT="
     cross_compile
     debug
     extra_warnings
+    fpo
     logging
     lto
     optimizations
@@ -2084,6 +2086,12 @@ enable stripping
 enable asm
 enable debug
 enable doc
+enable fastdiv
+enable ffmpeg
+enable ffplay
+enable ffprobe
+enable ffserver
+enable fpo
 enable optimizations
 enable runtime_cpudetect
 enable safe_bitstream_reader
@@ -3435,7 +3443,7 @@ die_license_disabled version3 libvo_amrwbenc
 
 enabled version3 && { enabled gpl && enable gplv3 || enable lgplv3; }
 
-disabled optimizations || check_cflags -fomit-frame-pointer
+disabled optimizations || disabled fpo || check_cflags -fomit-frame-pointer
 
 enable_pic() {
     enable pic
@@ -4228,6 +4236,7 @@ echo "debug symbols             ${debug-no}"
 echo "strip symbols             ${stripping-no}"
 echo "optimize for size         ${small-no}"
 echo "optimizations             ${optimizations-no}"
+echo "frame pointer omission    ${fpo-no}" 
 echo "static                    ${static-no}"
 echo "shared                    ${shared-no}"
 echo "postprocessing support    ${postproc-no}"
