@@ -258,6 +258,7 @@ Advanced options (experts only):
   --enable-pic             build position-independent code
   --malloc-prefix=PFX      prefix malloc and related names with PFX
   --enable-sram            allow use of on-chip SRAM
+  --disable-fpo            disable frame pointer omission
   --disable-symver         disable symbol versioning
   --optflags               override optimization-related compiler flags
   --postproc-version=V     build libpostproc version V.
@@ -1275,6 +1276,7 @@ CMDLINE_SELECT="
     cross_compile
     debug
     extra_warnings
+    fpo
     logging
     optimizations
     stripping
@@ -1852,6 +1854,7 @@ enable asm
 enable debug
 enable doc
 enable fastdiv
+enable fpo
 enable network
 enable optimizations
 enable safe_bitstream_reader
@@ -2812,7 +2815,7 @@ die_license_disabled version3 libvo_amrwbenc
 
 enabled version3 && { enabled gpl && enable gplv3 || enable lgplv3; }
 
-disabled optimizations || check_cflags -fomit-frame-pointer
+disabled optimizations || disabled fpo || check_cflags -fomit-frame-pointer
 
 enable_pic() {
     enable pic
@@ -3501,6 +3504,7 @@ echo "debug symbols             ${debug-no}"
 echo "strip symbols             ${stripping-no}"
 echo "optimize for size         ${small-no}"
 echo "optimizations             ${optimizations-no}"
+echo "frame pointer omission    ${fpo-no}"
 echo "static                    ${static-no}"
 echo "shared                    ${shared-no}"
 echo "postprocessing support    ${postproc-no}"
