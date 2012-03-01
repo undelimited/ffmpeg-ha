@@ -182,7 +182,7 @@ static void init_offset(ShortenContext *s)
             break;
         default:
             av_log(s->avctx, AV_LOG_ERROR, "unknown audio type");
-            abort();
+            av_abort();
     }
 
     for (chan = 0; chan < s->channels; chan++)

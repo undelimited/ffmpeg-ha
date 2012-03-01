@@ -105,10 +105,6 @@ struct AVDictionary {
 
 #define MANGLE(a) EXTERN_PREFIX LOCAL_MANGLE(a)
 
-/* debug stuff */
-
-#define av_abort()      do { av_log(NULL, AV_LOG_ERROR, "Abort at %s:%d\n", __FILE__, __LINE__); abort(); } while (0)
-
 /* math */
 
 #if ARCH_X86
