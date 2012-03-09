@@ -331,6 +331,7 @@ char av_get_picture_type_char(enum AVPictureType pict_type);
 #include "intfloat_readwrite.h"
 #include "log.h"
 #include "pixfmt.h"
+#include "abort.h"
 
 /**
  * Return x default pointer in case p is NULL.

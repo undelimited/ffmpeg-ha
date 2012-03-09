@@ -1096,7 +1096,7 @@ int ff_find_unused_picture(MpegEncContext *s, int shared)
      * all. Similarly, missing reference frames have to be replaced by
      * interpolated/MC frames, anything else is a bug in the codec ...
      */
-    abort();
+    av_abort();
     return -1;
 }
 

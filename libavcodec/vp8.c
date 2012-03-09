@@ -1609,7 +1609,7 @@ static int vp8_decode_frame(AVCodecContext *avctx, void *data, int *data_size,
         }
     if (i == 5) {
         av_log(avctx, AV_LOG_FATAL, "Ran out of free frames!\n");
-        abort();
+        av_abort();
     }
     if (curframe->data[0])
         vp8_release_frame(s, curframe, 1, 0);
