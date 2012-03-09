@@ -58,21 +58,3 @@ int av_strerror(int errnum, char *errbuf, size_t errbuf_size)
 
     return ret;
 }
-
-void av_abort_default_callback(void)
-{
-    abort();
-}
-
-static void (*av_abort_callback)(void) = av_abort_default_callback;
-
-void av_abort(void)
-{
-    av_log(NULL, AV_LOG_ERROR, "Abort at %s:%d\n", __FILE__, __LINE__);
-    av_abort_callback();
-}
-
-void av_abort_set_callback(void (*callback)(void))
-{
-    av_abort_callback = callback;
-}

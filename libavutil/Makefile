@@ -2,7 +2,8 @@ include $(SUBDIR)../config.mak
 
 NAME = avutil
 
-HEADERS = adler32.h                                                     \
+HEADERS = abort.h                                                       \
+          adler32.h                                                     \
           aes.h                                                         \
           attributes.h                                                  \
           audioconvert.h                                                \
@@ -42,7 +43,8 @@ HEADERS = adler32.h                                                     \
 
 BUILT_HEADERS = avconfig.h
 
-OBJS = adler32.o                                                        \
+OBJS = abort.o                                                          \
+       adler32.o                                                        \
        aes.o                                                            \
        audioconvert.o                                                   \
        avstring.o                                                       \
