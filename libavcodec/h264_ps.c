@@ -40,6 +40,78 @@
 #define MAX_LOG2_MAX_FRAME_NUM    (12 + 4)
 #define MIN_LOG2_MAX_FRAME_NUM    4
 
+// Profiles and levels
+#define H264_PROFILE_SUPPORTED_NB		15
+#define H264_PROFILE_CAVLC444 			44
+#define H264_PROFILE_BASELINE           66
+#define H264_PROFILE_MAIN               77
+#define H264_PROFILE_SCALABLE_BASELINE  83 // Annex G
+#define H264_PROFILE_SCALABLE_HIGH      86 // Annex G
+#define H264_PROFILE_EXTENDED           88
+#define H264_PROFILE_HIGH               100
+#define H264_PROFILE_HIGH10             110
+#define H264_PROFILE_MULTIVIEW_HIGH     118 // Annex H
+#define H264_PROFILE_HIGH422            122
+#define H264_PROFILE_STEREO_HIGH        128 // Annex H
+#define H264_PROFILE_HIGH444            144
+#define H264_PROFILE_ADVANCED444_INTRA  166 // ?
+#define H264_PROFILE_ADVANCED444        188 // ?
+#define H264_PROFILE_HIGH444_PRED       244
+#define H264_LEVEL_SUPPORTED_NB 16
+#define H264_LEVEL_1     10
+#define H264_LEVEL_11    11
+#define H264_LEVEL_1b    11
+#define H264_LEVEL_12    12
+#define H264_LEVEL_13    13
+#define H264_LEVEL_2     20
+#define H264_LEVEL_21    21
+#define H264_LEVEL_22    22
+#define H264_LEVEL_3     30
+#define H264_LEVEL_31    31
+#define H264_LEVEL_32    32
+#define H264_LEVEL_4     40
+#define H264_LEVEL_41    41
+#define H264_LEVEL_42    42
+#define H264_LEVEL_5     50
+#define H264_LEVEL_51    51
+
+static const uint8_t supported_profiles[H264_PROFILE_SUPPORTED_NB]={
+	H264_PROFILE_CAVLC444,
+	H264_PROFILE_BASELINE,
+	H264_PROFILE_MAIN,
+	H264_PROFILE_SCALABLE_BASELINE,
+	H264_PROFILE_SCALABLE_HIGH,
+	H264_PROFILE_EXTENDED,
+	H264_PROFILE_HIGH,
+	H264_PROFILE_HIGH10,
+	H264_PROFILE_MULTIVIEW_HIGH,
+	H264_PROFILE_HIGH422,
+	H264_PROFILE_STEREO_HIGH,
+	H264_PROFILE_HIGH444,
+	H264_PROFILE_ADVANCED444_INTRA,
+	H264_PROFILE_ADVANCED444,
+	H264_PROFILE_HIGH444_PRED
+};
+
+static const uint8_t supported_levels[H264_LEVEL_SUPPORTED_NB]={
+	H264_LEVEL_1,
+	H264_LEVEL_11,
+	H264_LEVEL_1b,
+	H264_LEVEL_12,
+	H264_LEVEL_13,
+	H264_LEVEL_2,
+	H264_LEVEL_21,
+	H264_LEVEL_22,
+	H264_LEVEL_3,
+	H264_LEVEL_31,
+	H264_LEVEL_32,
+	H264_LEVEL_4,
+	H264_LEVEL_41,
+	H264_LEVEL_42,
+	H264_LEVEL_5,
+	H264_LEVEL_51
+};
+
 static const AVRational pixel_aspect[17]={
  {0, 1},
  {1, 1},
@@ -337,15 +409,30 @@ int ff_h264_decode_seq_parameter_set(H264Context *h){
     int i, log2_max_frame_num_minus4;
     SPS *sps;
 
+	// We only accept known profiles
     profile_idc= get_bits(&s->gb, 8);
+    if ( memchr(supported_profiles, profile_idc, H264_PROFILE_SUPPORTED_NB) == 0 ) {
+         av_log(h->s.avctx, AV_LOG_ERROR, "sps has unsupported profile : %d\n", profile_idc);
+         return -1;
+    }
+	
     constraint_set_flags |= get_bits1(&s->gb) << 0;   //constraint_set0_flag
     constraint_set_flags |= get_bits1(&s->gb) << 1;   //constraint_set1_flag
     constraint_set_flags |= get_bits1(&s->gb) << 2;   //constraint_set2_flag
     constraint_set_flags |= get_bits1(&s->gb) << 3;   //constraint_set3_flag
     constraint_set_flags |= get_bits1(&s->gb) << 4;   //constraint_set4_flag
     constraint_set_flags |= get_bits1(&s->gb) << 5;   //constraint_set5_flag
-    get_bits(&s->gb, 2); // reserved
+    if (get_bits(&s->gb, 2) != 0) { // reserved_zero_2bits
+        av_log(h->s.avctx, AV_LOG_ERROR, "sps has invalid reserved_zero_2bits\n");
+        return -1;
+    }
+	
+	// We only accept supported levels
     level_idc= get_bits(&s->gb, 8);
+ 	if ( memchr(supported_levels, level_idc, H264_LEVEL_SUPPORTED_NB) == 0 ) {
+        av_log(h->s.avctx, AV_LOG_ERROR, "sps has unsupported profile : %d\n", profile_idc);
+        return -1;
+    }
     sps_id= get_ue_golomb_31(&s->gb);
 
     if(sps_id >= MAX_SPS_COUNT) {
@@ -560,6 +647,7 @@ int ff_h264_decode_picture_parameter_set(H264Context *h, int bit_length){
     unsigned int pps_id= get_ue_golomb(&s->gb);
     PPS *pps;
     const int qp_bd_offset = 6*(h->sps.bit_depth_luma-8);
+	int pic_init_qp, pic_init_qs;
     int bits_left;
 
     if(pps_id >= MAX_PPS_COUNT) {
@@ -622,6 +710,11 @@ int ff_h264_decode_picture_parameter_set(H264Context *h, int bit_length){
             break;
         }
     }
+	else if(pps->slice_group_count == 0 ) {
+        av_log(h->s.avctx, AV_LOG_ERROR, "pps_id (%d) has slice_group_count == 0\n", pps_id);
+        goto fail;
+    }
+	
     pps->ref_count[0]= get_ue_golomb(&s->gb) + 1;
     pps->ref_count[1]= get_ue_golomb(&s->gb) + 1;
     if(pps->ref_count[0]-1 > 32-1 || pps->ref_count[1]-1 > 32-1){
@@ -631,9 +724,29 @@ int ff_h264_decode_picture_parameter_set(H264Context *h, int bit_length){
 
     pps->weighted_pred= get_bits1(&s->gb);
     pps->weighted_bipred_idc= get_bits(&s->gb, 2);
-    pps->init_qp= get_se_golomb(&s->gb) + 26 + qp_bd_offset;
-    pps->init_qs= get_se_golomb(&s->gb) + 26 + qp_bd_offset;
-    pps->chroma_qp_index_offset[0]= get_se_golomb(&s->gb);
+	if(pps->weighted_bipred_idc > 2) {
+        av_log(h->s.avctx, AV_LOG_ERROR, "pps weighted_bipred_idc: %d\n", pps->weighted_bipred_idc);
+        goto fail;
+    }
+	pic_init_qp = get_se_golomb(&s->gb)  26;
+	if(pic_init_qp > 71 || pic_init_qp < (-20 - qp_bd_offset)) { // The real standard range is between -bd_offset to 51 but some encoders use slightly higher values to increase data compression
+        av_log(h->s.avctx, AV_LOG_ERROR, "pps pic_init_qp: %d\n", pic_init_qp);
+        goto fail;
+    }
+	pps->init_qp= pic_init_qp  qp_bd_offset;
+	
+	pic_init_qs =  get_se_golomb(&s->gb)  26;	
+	if(pic_init_qs > 70 || pic_init_qs < -20) { // The real standard range is between 0 to 50 but some encoders use slightly higher values to increase data compression
+        av_log(h->s.avctx, AV_LOG_ERROR, "pps pic_init_qs: %d\n", pic_init_qs);
+        goto fail;
+    }
+    pps->init_qs= pic_init_qs  qp_bd_offset;
+     pps->chroma_qp_index_offset[0]= get_se_golomb(&s->gb);
+	if(pps->chroma_qp_index_offset[0] < -12 || pps->chroma_qp_index_offset[0] > 12) {
+        av_log(h->s.avctx, AV_LOG_ERROR, "pps chroma_qp_index_offset: %d\n", pps->chroma_qp_index_offset[0]);
+        goto fail;
+	}
+	
     pps->deblocking_filter_parameters_present= get_bits1(&s->gb);
     pps->constrained_intra_pred= get_bits1(&s->gb);
     pps->redundant_pic_cnt_present = get_bits1(&s->gb);
@@ -648,6 +761,10 @@ int ff_h264_decode_picture_parameter_set(H264Context *h, int bit_length){
         pps->transform_8x8_mode= get_bits1(&s->gb);
         decode_scaling_matrices(h, h->sps_buffers[pps->sps_id], pps, 0, pps->scaling_matrix4, pps->scaling_matrix8);
         pps->chroma_qp_index_offset[1]= get_se_golomb(&s->gb); //second_chroma_qp_index_offset
+		if(pps->chroma_qp_index_offset[1] < -12 || pps->chroma_qp_index_offset[1] > 12) {
+			av_log(h->s.avctx, AV_LOG_ERROR, "pps chroma_qp_index_offset2: %d\n", pps->chroma_qp_index_offset[1]);
+			goto fail;
+		}
     } else {
         pps->chroma_qp_index_offset[1]= pps->chroma_qp_index_offset[0];
     }
