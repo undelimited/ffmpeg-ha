@@ -736,19 +736,19 @@ int ff_h264_decode_picture_parameter_set(H264Context *h, int bit_length){
         av_log(h->avctx, AV_LOG_ERROR, "pps weighted_bipred_idc: %d\n", pps->weighted_bipred_idc);
         goto fail;
     }
-    pic_init_qp = get_se_golomb(&h->gb)  26;
+    pic_init_qp = get_se_golomb(&h->gb) + 26;
     if(pic_init_qp > 71 || pic_init_qp < (-20 - qp_bd_offset)) { // The real standard range is between -bd_offset to 51 but some encoders use slightly higher values to increase data compression
         av_log(h->avctx, AV_LOG_ERROR, "pps pic_init_qp: %d\n", pic_init_qp);
         goto fail;
     }
     pps->init_qp= pic_init_qp  qp_bd_offset;
     
-    pic_init_qs =  get_se_golomb(&h->gb)  26;	
+    pic_init_qs =  get_se_golomb(&h->gb) + 26;
     if(pic_init_qs > 70 || pic_init_qs < -20) { // The real standard range is between 0 to 50 but some encoders use slightly higher values to increase data compression
         av_log(h->avctx, AV_LOG_ERROR, "pps pic_init_qs: %d\n", pic_init_qs);
         goto fail;
     }
-    pps->init_qs= pic_init_qs  qp_bd_offset;
+    pps->init_qs= pic_init_qs + qp_bd_offset;
      pps->chroma_qp_index_offset[0]= get_se_golomb(&h->gb);
     if(pps->chroma_qp_index_offset[0] < -12 || pps->chroma_qp_index_offset[0] > 12) {
         av_log(h->avctx, AV_LOG_ERROR, "pps chroma_qp_index_offset: %d\n", pps->chroma_qp_index_offset[0]);
