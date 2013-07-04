@@ -1,0 +1,73 @@
+#!/bin/sh
+
+WORKING_DIR=$(pwd)
+
+# Folders (without the trailing "/")
+# Path where the DLLs and header files will be output
+FFMPEG_OUT_PATH=~/ffmpeg
+# Path to the repository
+FFMPEG_SOURCE_PATH=~/ffmpeg-ha
+# Version of avcodec being built
+FFMPEG_VERSION=1.1.2
+
+clear
+
+if [ ! -d "$FFMPEG_OUT_PATH" ]; then
+    echo "Warning: directory $FFMPEG_OUT_PATH does not exist. Creating it"
+    mkdir -p ${FFMPEG_OUT_PATH}
+fi
+
+echo "Cleaning build and output folders..."
+cd $FFMPEG_SOURCE_PATH
+make clean
+rm -r ${FFMPEG_OUT_PATH}/ffmpeg
+
+echo "Running configure..."
+./configure --arch=x86 --enable-runtime-cpudetect --target-os=mingw32 --cross-prefix=i686-mingw32- --enable-memalign-hack --enable-shared --disable-static --build-suffix=-v$FFMPEG_VERSION
+
+if [ $? -ne 0 ] ; then
+  echo "Script completed unsuccessfully (configure)"
+  cd $WORKING_DIR
+  exit
+fi
+
+echo "Building ffmpeg..."
+make
+
+if [ $? -ne 0 ] ; then
+  echo "Script completed unsuccessfully (make)"
+  cd $WORKING_DIR
+  exit
+fi
+
+echo "Copying files to ${FFMPEG_OUT_PATH}..."
+mkdir -p ${FFMPEG_OUT_PATH}/ffmpeg/bin
+mkdir -p ${FFMPEG_OUT_PATH}/ffmpeg/libavcodec
+mkdir -p ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+mkdir -p ${FFMPEG_OUT_PATH}/ffmpeg/libswscale
+
+cp $(readlink -fn libavcodec/avcodec-v${FFMPEG_VERSION}.dll) ${FFMPEG_OUT_PATH}/ffmpeg/bin
+cp $(readlink -fn libavutil/avutil-v${FFMPEG_VERSION}.dll) ${FFMPEG_OUT_PATH}/ffmpeg/bin
+cp $(readlink -fn libswscale/swscale-v${FFMPEG_VERSION}.dll) ${FFMPEG_OUT_PATH}/ffmpeg/bin
+cp libavutil/avconfig.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+
+cp libavcodec/avcodec.h ${FFMPEG_OUT_PATH}/ffmpeg/libavcodec
+cp libavcodec/version.h ${FFMPEG_OUT_PATH}/ffmpeg/libavcodec
+cp libavutil/attributes.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+cp libavutil/audioconvert.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+cp libavutil/avutil.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+cp libavutil/common.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+cp libavutil/cpu.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+cp libavutil/error.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+cp libavutil/intfloat_readwrite.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+cp libavutil/log.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+cp libavutil/mathematics.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+cp libavutil/mem.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+cp libavutil/pixfmt.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+cp libavutil/rational.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+cp libavutil/samplefmt.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+cp libswscale/swscale.h ${FFMPEG_OUT_PATH}/ffmpeg/libswscale
+
+echo "Script completed successfully"
+
+cd $WORKING_DIR
