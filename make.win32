@@ -60,6 +60,13 @@ cp libavutil/common.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
 cp libavutil/cpu.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
 cp libavutil/error.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
 cp libavutil/intfloat_readwrite.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+
+cp libavutil/intfloat.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+cp libavutil/channel_layout.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+cp libavutil/dict.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+cp libavutil/old_pix_fmts.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+cp libavutil/version.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
+
 cp libavutil/log.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
 cp libavutil/mathematics.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
 cp libavutil/mem.h ${FFMPEG_OUT_PATH}/ffmpeg/libavutil
