@@ -8,7 +8,7 @@ FFMPEG_OUT_PATH=~/ffmpeg
 # Path to the repository
 FFMPEG_SOURCE_PATH=~/ffmpeg-ha
 # Version of avcodec being built
-FFMPEG_VERSION=1.1.2
+FFMPEG_VERSION=1.2.12
 
 clear
 
