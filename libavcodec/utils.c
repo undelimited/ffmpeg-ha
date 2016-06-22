@@ -1956,7 +1956,7 @@ static int recode_subtitle(AVCodecContext *avctx,
     }
     outpkt->size -= outl;
     memset(outpkt->data + outpkt->size, 0, outl);
-
+    
 end:
     if (cd != (iconv_t)-1)
         iconv_close(cd);
@@ -1964,6 +1964,7 @@ end:
 #else
     av_assert0(!"requesting subtitles recoding without iconv");
 #endif
+    return 0;
 }
 
 int avcodec_decode_subtitle2(AVCodecContext *avctx, AVSubtitle *sub,

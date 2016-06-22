@@ -741,7 +741,7 @@ int ff_h264_decode_picture_parameter_set(H264Context *h, int bit_length){
         av_log(h->avctx, AV_LOG_ERROR, "pps pic_init_qp: %d\n", pic_init_qp);
         goto fail;
     }
-    pps->init_qp= pic_init_qp  qp_bd_offset;
+    pps->init_qp= pic_init_qp + qp_bd_offset;
     
     pic_init_qs =  get_se_golomb(&h->gb) + 26;
     if(pic_init_qs > 70 || pic_init_qs < -20) { // The real standard range is between 0 to 50 but some encoders use slightly higher values to increase data compression
